@@ -26,10 +26,18 @@ sub inline {
     }
 
     $buf .= <<"EOD";
-<div id="twitter_div">
-<ul id="twitter_update_list"></ul></div>
-<script type="text/javascript" src="http://twitter.com/javascripts/blogger.js"></script>
-<script text="text/javascript" src="http://twitter.com/statuses/user_timeline/${userid}.json?callback=twitterCallback2&count=$num"></script>
+<div id="twitter_div"><p>Now loading Twitter messages..</p></div>
+<script src="http://twitterjs.googlecode.com/files/twitter-1.12.2.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+getTwitters('twitter_div', { 
+  id: '${userid}', 
+  count: $num, 
+  enableLinks: true, 
+  ignoreReplies: true, 
+  clearContents: true,
+  template: '"%text%" <a href="http://twitter.com/%user_screen_name%/statuses/%id%/">%time%</a>'
+});
+</script>
 EOD
 
     return $buf;
