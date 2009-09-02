@@ -104,7 +104,7 @@ sub make_calendar {
     my $script_name = $wiki->config('script_name');
     my $nameenc = Util::url_encode($name);
     $buf .= << "EOD";
-<script language="JavaScript" src="gears_init.js">
+<script language="JavaScript" src="./theme/gears_init.js">
 </script>
 <script language="JavaScript">
 <!--

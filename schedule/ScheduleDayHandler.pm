@@ -110,7 +110,7 @@ sub do_action {
 	{ "url": "$script?action=SCHEDULECALENDAR&year=$thisyear&month=$thismonth&name=$nameenc" },
 	{ "url": "$script?action=SCHEDULECALENDAR&year=$nextyear&month=$nextmonth&name=$nameenc" },
 	{ "url": "$script?action=SCHEDULECALENDAR&year=$prevyear&month=$prevmonth&name=$nameenc" },
-	{ "url": "gears_init.js" },
+	{ "url": "theme/gears_init.js" },
 	{ "url": "theme/$theme/$theme.css" }
 	]
 }
