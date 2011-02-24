@@ -54,10 +54,11 @@ var imchat = new Object();
   imchat.name = "$name";
   imchat.onchangename = function() {
     imchat.name = \$("#imchat-name").val();
-    alert(imchat.page + imchat.name);
+//    alert(imchat.page + imchat.name);
   };
   imchat.onsubmit = function() {
-    alert("submit");
+    \$.post("$scriptname", {action: "IMCHAT", type: "submit", page: imchat.page, name: imchat.name, message: \$("#imchat-message").val()});
+//    alert("submit");
   };
   imchat.refresh = function() {
     // fetch statuses

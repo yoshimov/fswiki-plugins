@@ -3,7 +3,7 @@
 # Commentプラグインのアクションハンドラ。
 # 
 ############################################################
-package plugin::comment::CommentHandler;
+package plugin::imchat::IMChatHandler;
 use strict;
 #===========================================================
 # コンストラクタ
@@ -24,15 +24,11 @@ sub do_action {
 	
 	my $name    = $cgi->param("name");
 	my $message = $cgi->param("message");
-	my $count   = $cgi->param("count");
+	my $type   = $cgi->param("type");
 	my $page    = $cgi->param("page");
-	my $option  = $cgi->param("option");
-	
-	if(!$wiki->can_show($page)){
-		return $wiki->error("ページの参照権限がありません。");
-	}
+
 	if($name eq ""){
-		$name = "名無しさん";
+		$name = "noname";
 	} else {
 		# fswiki_post_nameというキーでクッキーをセットする
 		my $path   = &Util::cookie_path($wiki);
@@ -41,10 +37,14 @@ sub do_action {
 	}
 	
 	# フォーマットプラグインへの対応
-	my $format = $wiki->get_edit_format();
-	$name    = $wiki->convert_to_fswiki($name   ,$format,1);
-	$message = $wiki->convert_to_fswiki($message,$format,1);
-	
+#	my $format = $wiki->get_edit_format();
+#	$name    = $wiki->convert_to_fswiki($name   ,$format,1);
+#	$message = $wiki->convert_to_fswiki($message,$format,1);
+
+  if ($type eq "status") {
+  } elsif ($type eq "get") {
+  } elsif ($type eq "submit") {
+  }
 	if($page ne "" && $message ne "" && $count ne ""){
 		
 		my @lines = split(/\n/,$wiki->get_page($page));
