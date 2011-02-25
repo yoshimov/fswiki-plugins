@@ -39,6 +39,8 @@ sub do_action {
 		print "Set-Cookie: ",$cookie->as_string,"\n";
 	}
 	
+  print "Cache-Control: no-cache\n";
+  print "Pragma: no-cache\n";
   print "Content-Type: text/html; charset=euc-jp\n\n";
 	# フォーマットプラグインへの対応
 #	my $format = $wiki->get_edit_format();
@@ -58,7 +60,7 @@ sub do_action {
     my $filename = &Util::make_filename($wiki->config('log_dir'),
                                         &Util::url_encode($page), "imchat");
     my $hash = &Util::load_config_hash(undef,$filename);
-    $buf .= "<div id=\"imchat-status\" style=\"position:absolute;left:450px;\">";
+    $buf .= "<div id=\"imchat-status\" style=\"position:absolute;left:650px;\">";
     $buf .= "ログイン中ユーザ";
     $hash->{$name} = $time;
     foreach $key (keys %$hash) {
