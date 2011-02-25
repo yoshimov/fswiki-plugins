@@ -4,7 +4,8 @@
 # 
 ############################################################
 package plugin::imchat::IMChatHandler;
-use strict;
+use Jcode;
+#use strict;
 #===========================================================
 # コンストラクタ
 #===========================================================
@@ -23,11 +24,13 @@ sub do_action {
 	my $cgi  = $wiki->get_CGI;
 	
 	my $name    = $cgi->param("name");
+        Jcode::convert(\$name, 'euc', 'utf8');
 	my $message = $cgi->param("message");
-	my $type   = $cgi->param("type");
+        Jcode::convert(\$message, 'euc', 'utf8');
+	my $type    = $cgi->param("type");
 	my $page    = $cgi->param("page");
 
-	if($name eq ""){
+	if ($name eq "") {
 		$name = "noname";
 	} else {
 		# fswiki_post_nameというキーでクッキーをセットする
@@ -36,80 +39,67 @@ sub do_action {
 		print "Set-Cookie: ",$cookie->as_string,"\n";
 	}
 	
+  print "Content-Type: text/html; charset=euc-jp\n\n";
 	# フォーマットプラグインへの対応
 #	my $format = $wiki->get_edit_format();
 #	$name    = $wiki->convert_to_fswiki($name   ,$format,1);
 #	$message = $wiki->convert_to_fswiki($message,$format,1);
+  my $time = time();
+
+  # 現在時刻
+  my ($sec, $min, $hour, $mday, $month, $year, $wday) = localtime($time);
+  $year += 1900;
+  $month  += 1;
 
   if ($type eq "status") {
-  } elsif ($type eq "get") {
-  } elsif ($type eq "submit") {
-  }
-	if($page ne "" && $message ne "" && $count ne ""){
-		
-		my @lines = split(/\n/,$wiki->get_page($page));
-		my $flag       = 0;
-		my $form_count = 1;
-		my $content    = "";
-		
-		foreach(@lines){
-			# 新着順の場合
-			if($option eq "reverse"){
-				$content = $content.$_."\n";
-				if(/^{{comment\s*.*}}$/ && $flag==0){
-					if($form_count==$count){
-						$content = $content."*$message - $name (".Util::format_date(time()).")\n";
-						$flag = 1;
-					} else {
-						$form_count++;
-					}
-				}
-			# ページ末尾に追加の場合
-			} elsif($option eq "tail"){
-				$content = $content.$_."\n";
-				
-			# 投稿順の場合
-			} else {
-				if(/^{{comment\s*.*}}$/ && $flag==0){
-					if($form_count==$count){
-						$content = $content."*$message - $name (".Util::format_date(time()).")\n";
-						$flag = 1;
-					} else {
-						$form_count++;
-					}
-				}
-				$content = $content.$_."\n";
-			}
-		}
-		
-		# ページ末尾に追加の場合は最後に追加
-		if($option eq "tail" && check_comment($wiki, 'Footer')){
-			$content = $content."*$message - $name (".Util::format_date(time()).")\n";
-			$flag = 1;
-		}
-		
-		if($flag==1){
-			$wiki->save_page($page,$content);
-		}
-	}
-	
-	# 元のページにリダイレクト
-	$wiki->redirect($page);
-}
+    my $buf = "";
 
-#==================================================================
-# ページにcommentプラグインが含まれているかどうかをチェック
-#==================================================================
-sub check_comment {
-	my $wiki = shift;
-	my $page = shift;
-	my @lines = split(/\n/,$wiki->get_page($page));
-	foreach(@lines){
-		if(/^{{comment\s*.*}}$/){
-			return 1;
-		}
-	}
-	return 0;
+    # statusを読み込む
+    my $filename = &Util::make_filename($wiki->config('log_dir'),
+                                        &Util::url_encode($page), "imchat");
+    my $hash = &Util::load_config_hash(undef,$filename);
+    $buf .= "<div id=\"imchat-status\" style=\"position:absolute;left:450px;\">";
+    $buf .= "ログイン中ユーザ";
+    $hash->{$name} = $time;
+    foreach $key (keys %$hash) {
+      $ptime = $hash->{$key};
+      if ($ptime + 10 < $time) {
+        # timeout
+        delete $hash->{$key};
+      }
+      $buf .= "<li>$key</li>\n";
+    }
+    $buf .= "</div>";
+    &Util::save_config_hash(undef,$filename,$hash);
+
+    # messageを読み込む
+    $mespage = $page."/".$year."-".$month."-".$mday;
+    my $content = $wiki->get_page($mespage);
+    $buf .= "<div id=\"imchat-message\" style=\"width:400px;height:400px;overflow:auto;\">";
+    $buf .= "最新メッセージ ";
+    $buf .= "[<a href=\"".$wiki->config('script_name')."?action=CALENDAR&amp;name=".$page."&amp;year=".$year."&amp;month=".$month."\">";
+    $buf .= "過去ログ</a>]";
+    # 逆順にする
+    my @lines = split(/\n/,$content);
+    my $revcont = "";
+    while (@lines) {
+      $revcont .= pop(@lines)."\n";
+    }
+    $buf .= $wiki->process_wiki($revcont);
+    $buf .= "</div>";
+    
+
+    print $buf;
+    exit();
+
+  } elsif ($type eq "submit") {
+    $mespage = $page."/".$year."-".$month."-".$mday;
+    my $content = $wiki->get_page($mespage);
+    $content .= "*".$name.": ".$message." - ";
+    $content .= $year."/".$month."/".$mday." ".$hour.":".$min.":".$sec."\n";
+    $wiki->save_page($mespage, $content);
+    exit();
+  }
 }
 
 1;

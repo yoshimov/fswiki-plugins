@@ -41,7 +41,6 @@ sub paragraph {
   my $pageenc = Util::url_encode($opt);
   my $buf = << "EOD";
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-<div id="imchat-message"></div>
 <div id="imchat-status"></div>
 <div id="imchat-form">
 Ì¾Á°¡§<input id="imchat-name" type="text" size="20" value="$name" />
@@ -52,27 +51,20 @@ sub paragraph {
 var imchat = new Object();
   imchat.page = "$opt";
   imchat.name = "$name";
-  imchat.onchangename = function() {
-    imchat.name = \$("#imchat-name").val();
-//    alert(imchat.page + imchat.name);
-  };
   imchat.onsubmit = function() {
-    \$.post("$scriptname", {action: "IMCHAT", type: "submit", page: imchat.page, name: imchat.name, message: \$("#imchat-message").val()});
-//    alert("submit");
+    \$.post("$scriptname", {action: "IMCHAT", type: "submit", page: "$pageenc", name: \$("#imchat-name").val(), message: \$("#imchat-text").val()}, function() {
+      imchat.refresh();
+    });
+    //    alert("submit");
   };
   imchat.refresh = function() {
     // fetch statuses
-      \$.get("$scriptname?action=IMCHAT&type=status&page=$pageenc&name=" + imchat.name, function(data) {
+      \$.get("$scriptname", {action: "IMCHAT", type: "status", page: "$pageenc", name: \$("#imchat-name").val()}, function(data) {
         \$("#imchat-status").html(data);
-      });
-    // fetch messages
-      \$.get("$scriptname?action=IMCHAT&type=get&page=$pageenc&name=" + imchat.name, function(data) {
-        \$("#imchat-message").html(data);
       });
   };
 \$(function() {
   \$("#imchat-submit").click(imchat.onsubmit);
-  \$("#imchat-name").change(imchat.onchangename);
   imchat.refresh();
   setInterval(imchat.refresh, 5000);
 });
