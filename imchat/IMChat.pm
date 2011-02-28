@@ -55,9 +55,9 @@ sub paragraph {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 <table><tr><td valign="top">
 最新メッセージ [<a href="$scriptname?action=CALENDAR&amp;name=$pageenc&amp;year=$year&amp;month=$month">過去ログ</a>]
-<div id="imchat-message" style="width:400px;overflow:auto;"></div>
+<div id="imchat-message" style="width:500px;overflow:auto;"></div>
 </td><td valign="top">
-ログイン中ユーザ
+オンラインユーザ
 <div id="imchat-status"></div>
 </td></tr><tr><td colspan="2">
 <div id="imchat-form">
