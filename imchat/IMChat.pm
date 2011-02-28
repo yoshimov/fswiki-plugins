@@ -2,10 +2,11 @@
 # 
 # <p>Wiki上でチャットを行うプラグインです。</p>
 # <pre>
-# {{imchat チャット名}}
+# {{imchat チャット名[,表示行数]}}
 # </pre>
 # <p>
 #   チャット内容はチャット名のカレンダに記録されていきます。
+#   表示行数のデフォルトは16です。
 # </p>
 # 
 ############################################################
@@ -27,6 +28,7 @@ sub paragraph {
   my $self = shift;
   my $wiki = shift;
   my $opt  = shift;
+  my $lines = shift;
   my $cgi  = $wiki->get_CGI;
   
   # 名前を取得
@@ -37,6 +39,10 @@ sub paragraph {
       $name = $login->{id};
     }
   }
+  if ($lines eq '') {
+    $lines = 16;
+  }
+  
   # 現在時刻
   my $time = time();
   my ($sec, $min, $hour, $mday, $month, $year, $wday) = localtime($time);
@@ -91,8 +97,8 @@ var imchat = new Object();
           // message list
           var c = "";
           var i = 0;
-          if (data.messages.length > 15) {
-            i = data.messages.length - 15;
+          if (data.messages.length > $lines) {
+            i = data.messages.length - $lines;
           }
           for (; i < data.messages.length; i ++) {
             var m = data.messages[i];
@@ -110,6 +116,26 @@ var imchat = new Object();
       }});
     // TODO: notify new message
   };
+  imchat.blink = function() {
+    if (imchat.blurtime && imchat.lasttime && imchat.lasttime.getTime() > imchat.blurtime.getTime()) {
+      if (document.title.match(/^\\[New/)) {
+        document.title = imchat.origtitle;
+      } else {
+        imchat.origtitle = document.title;
+        document.title = "[New message!] " + document.title;
+      }
+    } else {
+      if (document.title.match(/^\\[New/)) {
+        document.title = imchat.origtitle;
+      }
+    }
+  };
+  imchat.onwindowblur = function() {
+    imchat.blurtime = new Date();
+  };
+  imchat.onwindowfocus = function() {
+    imchat.blurtime = null;
+  };
 \$(function() {
   \$("#imchat-submit").click(imchat.onsubmit);
   \$("#imchat-text").keypress(function(e) {
@@ -117,8 +143,11 @@ var imchat = new Object();
       imchat.onsubmit();
     }
   });
+  \$(window).blur(imchat.onwindowblur);
+  \$(window).focus(imchat.onwindowfocus);
   imchat.refresh();
   setInterval(imchat.refresh, 5000);
+  setInterval(imchat.blink, 1000);
 });
 </script>
 EOD
