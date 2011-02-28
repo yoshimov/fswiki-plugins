@@ -46,51 +46,64 @@ sub do_action {
 #	my $format = $wiki->get_edit_format();
 #	$name    = $wiki->convert_to_fswiki($name   ,$format,1);
 #	$message = $wiki->convert_to_fswiki($message,$format,1);
-  my $time = time();
 
   # 現在時刻
+  my $time = time();
   my ($sec, $min, $hour, $mday, $month, $year, $wday) = localtime($time);
   $year += 1900;
   $month  += 1;
 
   if ($type eq "status") {
-    my $buf = "";
+    my $buf = "{";
 
+    # messageを読み込む
+    $mespage = $page."/".$year."-".$month."-".$mday;
+    $buf .= "\"lastupdate\":\"".$wiki->get_last_modified($mespage)."\"";
+    
+    my $content = $wiki->get_page($mespage);
+    $buf .= ",\"messages\":[";
+    my $first = 1;
+    my $count = 0;
+    while ($content =~ m/(\n|^)\*\s*([^:\n\s]*)\s*:\s*([^\n]*)\s+\-\s+([0-9:\/]+[^\n]*)\s*($|\n)/mg) {
+      my $mname = $2;
+      my $mmes = $3;
+      my $mtime = $4;
+      unless ($first) {
+        $buf .= ",";
+      } else {
+        $first = 0;
+      }
+      $buf .= "{\"name\":\"".$mname."\",\"message\":\"".$mmes."\",\"timestamp\":\"".$mtime."\"}";
+#      if ($count++ > 20) {
+#        last;
+#      }
+    }
+    $buf .= "]";
+    
     # statusを読み込む
     my $filename = &Util::make_filename($wiki->config('log_dir'),
                                         &Util::url_encode($page), "imchat");
     my $hash = &Util::load_config_hash(undef,$filename);
-    $buf .= "<div id=\"imchat-status\" style=\"position:absolute;left:650px;\">";
-    $buf .= "ログイン中ユーザ";
     $hash->{$name} = $time;
+    $buf .= ",status:[";
+    my $first = 1;
     foreach $key (keys %$hash) {
       $ptime = $hash->{$key};
       if ($ptime + 10 < $time) {
         # timeout
         delete $hash->{$key};
       }
-      $buf .= "<li>$key</li>\n";
+      unless ($first) {
+        $buf .= ",";
+      } else {
+        $first = 0;
+      }
+      $buf .= "{\"name\":\"".$key."\",\"lastupdate\":\"".$hash->{$key}."\"}";
     }
-    $buf .= "</div>";
+    $buf .= "]";
     &Util::save_config_hash(undef,$filename,$hash);
 
-    # messageを読み込む
-    $mespage = $page."/".$year."-".$month."-".$mday;
-    my $content = $wiki->get_page($mespage);
-    $buf .= "<div id=\"imchat-message\" style=\"width:400px;height:400px;overflow:auto;\">";
-    $buf .= "最新メッセージ ";
-    $buf .= "[<a href=\"".$wiki->config('script_name')."?action=CALENDAR&amp;name=".$page."&amp;year=".$year."&amp;month=".$month."\">";
-    $buf .= "過去ログ</a>]";
-    # 逆順にする
-    my @lines = split(/\n/,$content);
-    my $revcont = "";
-    while (@lines) {
-      $revcont .= pop(@lines)."\n";
-    }
-    $buf .= $wiki->process_wiki($revcont);
-    $buf .= "</div>";
-    
-
+    $buf .= "}";
     print $buf;
     exit();
 
