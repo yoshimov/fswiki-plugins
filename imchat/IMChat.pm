@@ -52,7 +52,14 @@ sub paragraph {
   my $scriptname = $wiki->config('script_name');
   my $pageenc = Util::url_encode($opt);
   my $buf = << "EOD";
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script src="/theme/jquery-1.5.1.min.js"></script>
+<script type="text/javascript">
+if (typeof jQuery == "undefined") {
+  var s = document.createElement("script");
+  s.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js";
+  document.body.appendChild(s);
+}
+</script>
 <table><tr><td valign="top">
 最新メッセージ [<a href="$scriptname?action=CALENDAR&amp;name=$pageenc&amp;year=$year&amp;month=$month">過去ログ</a>]
 <div id="imchat-message" style="width:500px;overflow:auto;"></div>
