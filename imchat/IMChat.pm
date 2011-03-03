@@ -52,7 +52,13 @@ sub paragraph {
   my $scriptname = $wiki->config('script_name');
   my $pageenc = Util::url_encode($opt);
   my $buf = << "EOD";
-<script src="/theme/jquery-1.5.1.min.js"></script>
+<script type="text/javascript">
+if (typeof jQuery == "undefined") {
+  var s = document.createElement("script");
+  s.src = "/theme/jquery-1.5.1.min.js";
+  document.body.appendChild(s);
+}
+</script>
 <script type="text/javascript">
 if (typeof jQuery == "undefined") {
   var s = document.createElement("script");
@@ -109,7 +115,12 @@ var imchat = new Object();
           }
           for (; i < data.messages.length; i ++) {
             var m = data.messages[i];
-            c += "<b>" + m.name + "</b>: " + m.message + " - <small>" + m.timestamp + "</small><br />";
+            var str = m.message;
+            var nameexp = "@" + \$("#imchat-name").val();
+            if (str.match(nameexp)) {
+              str = "<font color='red'>" + str + "</font>";
+            }
+            c += "<b>" + m.name + "</b>: " + str + " - <small>" + m.timestamp + "</small><br />";
           }
           \$("#imchat-message").html(c);
         }
