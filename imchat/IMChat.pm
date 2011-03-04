@@ -31,6 +31,15 @@ sub paragraph {
   my $lines = shift;
   my $cgi  = $wiki->get_CGI;
   
+  my $page = $cgi->param("page");
+  
+  if(!defined($self->{$page})){
+    $self->{$page} = 1;
+  } else {
+    $self->{$page}++;
+  }
+  my $id = $self->{$page};
+
   # 名前を取得
   my $name = Util::url_decode($cgi->cookie(-name=>'fswiki_post_name'));
   if($name eq ''){
@@ -68,41 +77,40 @@ if (typeof jQuery == "undefined") {
 </script>
 <table><tr><td valign="top">
 最新メッセージ [<a href="$scriptname?action=CALENDAR&amp;name=$pageenc&amp;year=$year&amp;month=$month">過去ログ</a>]
-<div id="imchat-message" style="width:500px;overflow:auto;"></div>
+<div id="imchat-message$id" style="width:500px;overflow:auto;"></div>
 </td><td valign="top">
 オンラインユーザ
-<div id="imchat-status"></div>
+<div id="imchat-status$id"></div>
 </td></tr><tr><td colspan="2">
-<div id="imchat-form">
-名前：<input id="imchat-name" type="text" size="20" value="$name" />
-コメント：<input id="imchat-text" type="text" size="50" />
-<input id="imchat-submit" type="button" value="投稿" />
+<div class="imchat-form">
+名前：<input id="imchat-name$id" type="text" size="20" value="$name" />
+コメント：<input id="imchat-text$id" type="text" size="50" />
+<input id="imchat-submit$id" type="button" value="投稿" />
 </div>
 </td></tr>
 </table>
 <script type="text/javascript">
-var imchat = new Object();
+(function() {
+  var imchat = new Object();
   imchat.page = "$opt";
   imchat.name = "$name";
   imchat.lastupdate = 0;
   imchat.onsubmit = function() {
     \$.ajax({url:"$scriptname",
-    data:{action: "IMCHAT", type: "submit", page: "$pageenc", name: \$("#imchat-name").val(), message: \$("#imchat-text").val()},
+    data:{action: "IMCHAT", type: "submit", page: "$pageenc", name: \$("#imchat-name$id").val(), message: \$("#imchat-text$id").val()},
     cache:false,
     success:function() {
-      \$("#imchat-text").attr("value", "");
+      \$("#imchat-text$id").attr("value", "");
       imchat.refresh();
     }});
-    //    alert("submit");
   };
   imchat.refresh = function() {
     // fetch statuses
       \$.ajax({url:"$scriptname",
-      data:{action: "IMCHAT", type: "status", page: "$pageenc", name: \$("#imchat-name").val()},
+      data:{action: "IMCHAT", type: "status", page: "$pageenc", name: \$("#imchat-name$id").val()},
       cache:false,
 //      dataType:"json",
       success:function(data) {
-//        \$("#imchat-status").html(data);
         data = eval("(" + data + ")");//\$.parseJSON(data);
         if (imchat.lastupdate != data.lastupdate) {
           imchat.lastupdate = data.lastupdate;
@@ -116,13 +124,13 @@ var imchat = new Object();
           for (; i < data.messages.length; i ++) {
             var m = data.messages[i];
             var str = m.message;
-            var nameexp = "@" + \$("#imchat-name").val();
+            var nameexp = "@" + \$("#imchat-name$id").val();
             if (str.match(nameexp)) {
               str = "<font color='red'>" + str + "</font>";
             }
             c += "<b>" + m.name + "</b>: " + str + " - <small>" + m.timestamp + "</small><br />";
           }
-          \$("#imchat-message").html(c);
+          \$("#imchat-message$id").html(c);
         }
         // status
         var c = "";
@@ -130,7 +138,7 @@ var imchat = new Object();
           var s = data.status[i];
           c+= "<li>" + s.name + "</li>";
         }
-        \$("#imchat-status").html(c);
+        \$("#imchat-status$id").html(c);
       }});
     // TODO: notify new message
   };
@@ -155,8 +163,8 @@ var imchat = new Object();
     imchat.blurtime = null;
   };
 \$(function() {
-  \$("#imchat-submit").click(imchat.onsubmit);
-  \$("#imchat-text").keypress(function(e) {
+  \$("#imchat-submit$id").click(imchat.onsubmit);
+  \$("#imchat-text$id").keypress(function(e) {
     if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
       imchat.onsubmit();
     }
@@ -167,6 +175,7 @@ var imchat = new Object();
   setInterval(imchat.refresh, 5000);
   setInterval(imchat.blink, 1000);
 });
+})();
 </script>
 EOD
 	
