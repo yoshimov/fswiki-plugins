@@ -15,22 +15,22 @@ sub new {
 }
 
 sub inline {
-    my $self  = shift;
-    my $wiki  = shift;
-    my $id = shift;
-    my $buf = "";
-    my $userid = &Util::escapeHTML($id);
+  my $self  = shift;
+  my $wiki  = shift;
+  my $id = shift;
+  my $count = shift;
+  my $buf = "";
 
-    $buf .= <<"EOD";
-<script src="http://cdn.topsy.com/topsy.js?init=topsyWidgetCreator" type="text/javascript"></script>
-<div class="topsy_widget_data"><!--
-  {
-    "url": location.href,
-    "title": encodeURIComponent(document.title),
-    "style": "big",
-    "nick": "$id"
+  if ($count eq "") {
+    $count = "none";
   }
---></div>
+  
+    $buf .= <<"EOD";
+<a href="http://twitter.com/share"
+  class="twitter-share-button"
+  data-count="$count"
+  data-via="$id">Tweet</a>
+<script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
 EOD
 
     return $buf;

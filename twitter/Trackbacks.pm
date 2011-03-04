@@ -49,7 +49,7 @@ if (typeof jQuery == "undefined") {
     for (var i = 0; i < res.list.length; i ++) {
       var item = res.list[i];
       text += "<li><a href=\\"" + item.author.url + "\\">";
-      text += "<img src=\\"" + item.author.photo_url + "\\" width=\\"24\\" height=\\"24\\" />";
+      text += "<img border=\\"0\\" src=\\"" + item.author.photo_url + "\\" width=\\"24\\" height=\\"24\\" />";
       text += "@" + item.author.url.replace("http://twitter.com/", "") + "</a>: ";
       text += item.content;
       text += " (<a href=\\"" + item.permalink_url + "\\">";
