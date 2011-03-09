@@ -61,22 +61,18 @@ sub paragraph {
   my $scriptname = $wiki->config('script_name');
   my $pageenc = Util::url_encode($opt);
   my $buf = << "EOD";
-<script type="text/javascript">
-if (typeof jQuery == "undefined") {
-  var s = document.createElement("script");
-  s.src = "/theme/jquery-1.5.1.min.js";
-  document.body.appendChild(s);
-}
-</script>
+<script src="/theme/jquery-1.5.1.min.js"></script>
 <script type="text/javascript">
 if (typeof jQuery == "undefined") {
   var s = document.createElement("script");
   s.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js";
-  document.body.appendChild(s);
+  document.head.appendChild(s);
 }
 </script>
 <table><tr><td valign="top">
+<div id="imchat-messageheader$id">
 最新メッセージ [<a href="$scriptname?action=CALENDAR&amp;name=$pageenc&amp;year=$year&amp;month=$month">過去ログ</a>]
+</div>
 <div id="imchat-message$id" style="width:500px;overflow:auto;"></div>
 </td><td valign="top">
 オンラインユーザ
@@ -113,8 +109,6 @@ if (typeof jQuery == "undefined") {
       success:function(data) {
         data = eval("(" + data + ")");//\$.parseJSON(data);
         if (imchat.lastupdate != data.lastupdate) {
-          imchat.lastupdate = data.lastupdate;
-          imchat.lasttime = new Date();
           // message list
           var c = "";
           var i = 0;
@@ -131,6 +125,12 @@ if (typeof jQuery == "undefined") {
             c += "<b>" + m.name + "</b>: " + str + " - <small>" + m.timestamp + "</small><br />";
           }
           \$("#imchat-message$id").html(c);
+          // desktop notify for chrome
+          if (imchat.lastupdate && imchat.blurtime && window.webkitNotifications) {
+            imchat.showNotification();
+          }
+          imchat.lastupdate = data.lastupdate;
+          imchat.lasttime = new Date();
         }
         // status
         var c = "";
@@ -140,7 +140,17 @@ if (typeof jQuery == "undefined") {
         }
         \$("#imchat-status$id").html(c);
       }});
-    // TODO: notify new message
+  };
+  imchat.showNotification = function() {
+    if (window.webkitNotifications.checkPermission() == 0) {
+      var title = 'Wiki Chat Notification';
+      var message = 'New message has posted.';
+      var n = window.webkitNotifications.createNotification(null, title, message);
+      n.ondisplay = function() {
+        setTimeout(function() { n.cancel(); }, 10000);
+      };
+      n.show();
+    }
   };
   imchat.blink = function() {
     if (imchat.blurtime && imchat.lasttime && imchat.lasttime.getTime() > imchat.blurtime.getTime()) {
@@ -171,6 +181,16 @@ if (typeof jQuery == "undefined") {
   });
   \$(window).blur(imchat.onwindowblur);
   \$(window).focus(imchat.onwindowfocus);
+  if (window.webkitNotifications && window.webkitNotifications.checkPermission() != 0) {
+    // create permission button
+    var b = \$(document.createElement("input"));
+    b.attr('type', 'button');
+    b.attr('value', 'Allow notification permissions');
+    b.click(function() {
+      window.webkitNotifications.requestPermission();
+    });
+    \$("#imchat-messageheader$id").append(b);
+  }
   imchat.refresh();
   setInterval(imchat.refresh, 5000);
   setInterval(imchat.blink, 1000);
