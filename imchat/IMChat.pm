@@ -60,15 +60,19 @@ sub paragraph {
 
   my $scriptname = $wiki->config('script_name');
   my $pageenc = Util::url_encode($opt);
-  my $buf = << "EOD";
-<script src="/theme/jquery-1.5.1.min.js"></script>
-<script type="text/javascript">
-if (typeof jQuery == "undefined") {
-  var s = document.createElement("script");
-  s.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js";
-  document.head.appendChild(s);
-}
-</script>
+  my $jq_file = "jquery-1.5.1.min.js";
+  my $buf = "";
+  if (-e $wiki->config('theme_dir')."/".$jq_file) {
+    my $theme_uri = $wiki->config('theme_uri');
+    $buf .= << "EOD";
+<script src="$theme_uri/$jq_file"></script>
+EOD
+  } else {
+    $buf .= << "EOD";
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+EOD
+  }
+  $buf .= << "EOD";
 <table><tr><td valign="top">
 <div id="imchat-messageheader$id">
 最新メッセージ [<a href="$scriptname?action=CALENDAR&amp;name=$pageenc&amp;year=$year&amp;month=$month">過去ログ</a>]
