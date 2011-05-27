@@ -41,7 +41,7 @@ sub do_action {
 	}
 
 	if($name eq ""){
-	    unless($wiki->use_cache($page)){
+#	    unless($wiki->use_cache($page)){
 		$name = $cgi->cookie(-name=>'post_name');
 		if($name eq ''){
 		    my $login = $wiki->get_login_info();
@@ -49,9 +49,9 @@ sub do_action {
 			$name = $login->{id};
 		    }
 		}
-	    } else {
-		$name = "名無しさん";
-	    }
+#	    } else {
+#		$name = "名無しさん";
+#	    }
 	}
 
 	if ($title ne "" && $url ne "") {
