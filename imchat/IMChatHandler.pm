@@ -29,7 +29,8 @@ sub do_action {
         Jcode::convert(\$message, 'euc', 'utf8');
 	my $type    = $cgi->param("type");
 	my $page    = $cgi->param("page");
-
+  my $focus = $cgi->param("focus");
+  
 	if ($name eq "") {
 		$name = "noname";
 	} else {
@@ -84,21 +85,28 @@ sub do_action {
     my $filename = &Util::make_filename($wiki->config('log_dir'),
                                         &Util::url_encode($page), "imchat");
     my $hash = &Util::load_config_hash(undef,$filename);
-    $hash->{$name} = $time;
+    unless ($name eq "noname") {
+      $hash->{$name} = $time;
+      $hash->{$name."#focus"} = $focus;
+    }
     $buf .= ",status:[";
     my $first = 1;
     foreach $key (keys %$hash) {
+      if ($key =~ /#focus$/) {
+        next;
+      }
       $ptime = $hash->{$key};
       if ($ptime + 10 < $time) {
         # timeout
         delete $hash->{$key};
+        delete $hash->{$key."#focus"};
       }
       unless ($first) {
         $buf .= ",";
       } else {
         $first = 0;
       }
-      $buf .= "{\"name\":\"".$key."\",\"lastupdate\":\"".$hash->{$key}."\"}";
+      $buf .= "{\"name\":\"".$key."\",\"lastupdate\":\"".$hash->{$key}."\",\"focus\":\"".$hash->{$key."#focus"}."\"}";
     }
     $buf .= "]";
     &Util::save_config_hash(undef,$filename,$hash);
