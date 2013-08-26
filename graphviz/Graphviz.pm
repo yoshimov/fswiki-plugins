@@ -32,7 +32,7 @@ sub block {
   my $wiki        = shift;
   my $dot_source = shift;
   my $content = <<"EOF";
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript" src="http://gviz.oodavid.com/gviz.js"></script>
 <script type="gviz" data-layout="dot"><![CDATA[
 EOF
